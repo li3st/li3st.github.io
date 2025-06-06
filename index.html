@@ -68,6 +68,10 @@
             font-weight: 500;
             font-size: 0.95rem;
             position: relative;
+            text-align: center;
+            white-space: nowrap;
+            min-width: 100px;
+            flex: 1 1 auto;
         }
         
         .tab-btn:hover {
@@ -205,6 +209,53 @@
             font-weight: 500;
             color: var(--text-light);
         }
+
+        /* Стили для вкладки с заметками */
+        .notes-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        #notes-textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 15px;
+            background-color: var(--bg-lighter);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            resize: vertical;
+            margin-bottom: 15px;
+            font-family: 'Open Sans', sans-serif;
+            line-height: 1.6;
+        }
+
+        .notes-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .notes-btn {
+            padding: 8px 16px;
+            background-color: var(--bg-darker);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .notes-btn:hover {
+            background-color: var(--highlight);
+        }
+
+        .notes-status {
+            margin-top: 10px;
+            color: var(--text-dim);
+            font-style: italic;
+            font-size: 0.9rem;
+        }
         
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -232,6 +283,7 @@
                 padding: 10px 16px;
                 font-size: 0.9rem;
                 white-space: nowrap;
+                flex: 0 0 auto;
             }
             
             .tab-content {
@@ -259,6 +311,7 @@
             <button class="tab-btn" data-tab="weak-points">Уязвимые точки</button>
             <button class="tab-btn" data-tab="armor">Система брони</button>
             <button class="tab-btn" data-tab="weapons">Система вооружения</button>
+            <button class="tab-btn" data-tab="notes">Заметки</button>
         </div>
         
         <div id="rules" class="tab-content active">
@@ -791,6 +844,18 @@
                 </tr>
             </table>
         </div>
+
+        <div id="notes" class="tab-content">
+            <h2>Мои заметки</h2>
+            <div class="notes-container">
+                <textarea id="notes-textarea" placeholder="Здесь вы можете делать заметки по игре..."></textarea>
+                <div class="notes-controls">
+                    <button id="save-notes" class="notes-btn">Сохранить</button>
+                    <button id="clear-notes" class="notes-btn">Очистить</button>
+                </div>
+                <div id="notes-status" class="notes-status"></div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -814,6 +879,48 @@
                     const tabContent = document.getElementById(tabId);
                     tabContent.classList.add('active');
                 });
+            });
+
+            // Логика для вкладки с заметками
+            const notesTextarea = document.getElementById('notes-textarea');
+            const saveNotesBtn = document.getElementById('save-notes');
+            const clearNotesBtn = document.getElementById('clear-notes');
+            const notesStatus = document.getElementById('notes-status');
+
+            // Загружаем сохраненные заметки при загрузке страницы
+            const savedNotes = localStorage.getItem('horizonBattleNotes');
+            if (savedNotes) {
+                notesTextarea.value = savedNotes;
+                notesStatus.textContent = 'Заметки загружены из сохранения';
+                setTimeout(() => notesStatus.textContent = '', 3000);
+            }
+
+            // Сохраняем заметки
+            saveNotesBtn.addEventListener('click', function() {
+                localStorage.setItem('horizonBattleNotes', notesTextarea.value);
+                notesStatus.textContent = 'Заметки сохранены!';
+                setTimeout(() => notesStatus.textContent = '', 3000);
+            });
+
+            // Очищаем заметки
+            clearNotesBtn.addEventListener('click', function() {
+                if (confirm('Вы уверены, что хотите очистить все заметки?')) {
+                    notesTextarea.value = '';
+                    localStorage.removeItem('horizonBattleNotes');
+                    notesStatus.textContent = 'Заметки очищены';
+                    setTimeout(() => notesStatus.textContent = '', 3000);
+                }
+            });
+
+            // Автосохранение при изменении текста (с задержкой)
+            let saveTimeout;
+            notesTextarea.addEventListener('input', function() {
+                clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(() => {
+                    localStorage.setItem('horizonBattleNotes', notesTextarea.value);
+                    notesStatus.textContent = 'Автосохранение...';
+                    setTimeout(() => notesStatus.textContent = '', 1000);
+                }, 500);
             });
         });
     </script>
