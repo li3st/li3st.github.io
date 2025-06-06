@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horizon Battle System</title>
+    <style>
+        :root {
+            --bg-dark: #121212;
+            --bg-darker: #0a0a0a;
+            --bg-light: #1e1e1e;
+            --accent: #4a8fe7;
+            --text: #e0e0e0;
+            --text-light: #f5f5f5;
+            --border: #333;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: var(--accent);
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+        }
+        
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+            gap: 5px;
+        }
+        
+        .tab-btn {
+            padding: 10px 20px;
+            background-color: var(--bg-light);
+            border: none;
+            color: var(--text);
+            cursor: pointer;
+            border-radius: 5px 5px 0 0;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .tab-btn:hover {
+            background-color: var(--accent);
+            color: var(--bg-dark);
+        }
+        
+        .tab-btn.active {
+            background-color: var(--accent);
+            color: var(--bg-dark);
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px;
+            background-color: var(--bg-light);
+            border-radius: 0 5px 5px 5px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        h2 {
+            color: var(--accent);
+            margin: 20px 0 15px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 5px;
+        }
+        
+        h3 {
+            color: var(--text-light);
+            margin: 15px 0 10px;
+        }
+        
+        ul, ol {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+        
+        li {
+            margin-bottom: 5px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            background-color: var(--bg-darker);
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid var(--border);
+        }
+        
+        th {
+            background-color: var(--accent);
+            color: var(--bg-dark);
+            font-weight: 600;
+        }
+        
+        tr:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        .armor-section {
+            margin-bottom: 30px;
+            border-left: 3px solid var(--accent);
+            padding-left: 15px;
+        }
+        
+        .armor-title {
+            font-size: 1.3rem;
+            color: var(--text-light);
+            margin-bottom: 10px;
+        }
+        
+        .armor-desc {
+            font-style: italic;
+            margin-bottom: 15px;
+            color: #aaa;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @media (max-width: 768px) {
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab-btn {
+                border-radius: 5px;
+                margin-bottom: 5px;
+            }
+            
+            .tab-content {
+                border-radius: 5px;
+            }
+            
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Horizon Battle System</h1>
+        
+        <div class="tabs">
+            <button class="tab-btn active" onclick="openTab(event, 'rules')">Основные правила</button>
+            <button class="tab-btn" onclick="openTab(event, 'attack')">Механика атаки</button>
+            <button class="tab-btn" onclick="openTab(event, 'damage')">Типы урона</button>
+            <button class="tab-btn" onclick="openTab(event, 'defense')">Механика защиты</button>
+            <button class="tab-btn" onclick="openTab(event, 'attack-types')">Типы атак</button>
+            <button class="tab-btn" onclick="openTab(event, 'weak-points')">Атака по уязвимым точкам</button>
+            <button class="tab-btn" onclick="openTab(event, 'armor')">Система Брони</button>
+            <button class="tab-btn" onclick="openTab(event, 'weapons')">Система вооружения</button>
+        </div>
+        
+        <div id="rules" class="tab-content active">
+            <h2>Основные правила</h2>
+            <ul>
+                <li>Каждый участник конфликта получает 1 действие за ход.</li>
+                <li>Карта делится на условные зоны:
+                    <ul>
+                        <li>Перемещение между соседними зонами — бесплатно.</li>
+                        <li>Перемещение через препятствия или на 2 зоны — требует действия.</li>
+                    </ul>
+                </li>
+                <li>Действия: атака, создание преимущества, преодоление препятствия.</li>
+                <li>Порядок хода определяется броском Внимательности.</li>
+            </ul>
+        </div>
+        
+        <div id="attack" class="tab-content">
+            <h2>Механика атаки</h2>
+            <ul>
+                <li>Атакующий использует Драку, Стрельбу или другой подходящий навык.</li>
+                <li>Разница между результатами атаки и защиты называется сдвигами (урон):
+                    <ul>
+                        <li>При успехе: урон распределяется между стрессом и последствиями.</li>
+                        <li>При ничьей: атакующий получает усиление.</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        
+        <div id="damage" class="tab-content">
+            <h2>Типы урона</h2>
+            <ul>
+                <li>Колющий</li>
+                <li>Рубящий</li>
+                <li>Дробящий</li>
+                <li>Огонь</li>
+                <li>Холод</li>
+                <li>Электричество</li>
+                <li>Силовой</li>
+                <li>Взрыв</li>
+                <li>Звук</li>
+                <li>Заражение (Corruption)</li>
+            </ul>
+            
+            <h3>Особенности:</h3>
+            <ul>
+                <li>Уязвимости: Удваивают сдвиги.</li>
+                <li>Сопротивления: Снижают сдвиги вдвое (минимум 0).</li>
+            </ul>
+        </div>
+        
+        <div id="defense" class="tab-content">
+            <h2>Механика защиты</h2>
+            <p>Защита зависит от типа урона и выбранной тактики:</p>
+            
+            <table>
+                <tr>
+                    <th>Навык</th>
+                    <th>Эффективность</th>
+                    <th>Ограничения</th>
+                </tr>
+                <tr>
+                    <td>Атлетика</td>
+                    <td>Лучше против колющего, рубящего, дробящего, силового, взрывного урона.</td>
+                    <td>Не защищает от звука, заражения и аспектов состояния. Удваивает провалы против огня, холода, электричества.</td>
+                </tr>
+                <tr>
+                    <td>Телосложение</td>
+                    <td>Оптимально против звука, огня, холода, электричества, заражения.</td>
+                    <td>Не защищает от силового урона. Удваивает провалы против колющего, рубящего, дробящего, взрывного.</td>
+                </tr>
+                <tr>
+                    <td>Акробатика</td>
+                    <td>Универсальна против точечных атак. Позволяет отступить при стильном успехе.</td>
+                    <td>Не защищает от аспектов состояния. Удваивает провалы против атак по области.</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div id="attack-types" class="tab-content">
+            <h2>Типы атак</h2>
+            
+            <h3>По цели</h3>
+            <ul>
+                <li>Стандартная дуэль: атакующий vs защищающийся.</li>
+                <li>Учитываются свойства брони.</li>
+            </ul>
+            
+            <h3>По области</h3>
+            <ul>
+                <li>Затрагивает всех в зоне.</li>
+                <li>Каждый защищается индивидуально.</li>
+                <li>Учитываются свойства брони.</li>
+            </ul>
+            
+            <h3>Аспекты состояния</h3>
+            <ul>
+                <li>Примеры: <em>Горение</em>, <em>Обморожение</em>, <em>Заражение</em>.</li>
+                <li>Фиксированная сложность: 3.</li>
+                <li>Механика:
+                    <ul>
+                        <li>Ничья: аспект усиливается (+1 к сложности).</li>
+                        <li>Стильный успех: досрочное снятие.</li>
+                        <li>Длительность: 3 хода (обновляется при повторном наложении).</li>
+                    </ul>
+                </li>
+            </ul>
+            
+            <h3>Урон от окружения</h3>
+            <ul>
+                <li>Работает как аспект состояния, но:
+                    <ul>
+                        <li>Не снимается стильным успехом.</li>
+                        <li>Длительность зависит от внешних факторов.</li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+        
+        <div id="weak-points" class="tab-content">
+            <h2>Атака по уязвимым точкам</h2>
+            <p>Сложная тактика, требующая подготовки:</p>
+            
+            <h3>Распознание точки</h3>
+            <ul>
+                <li>Навыки: <em>Знание машин</em>, <em>Внимательность</em> (и др.).</li>
+                <li>Успех: выявляет наличие у машины или брони уязвимых точек.</li>
+                <li>Стильный успех: выявляет типы урона, к которым уязвима точка.</li>
+                <li>Знание сохраняется навсегда для данного типа врагов.</li>
+            </ul>
+            
+            <h3>Распознание типа урона (опционально)</h3>
+            <ul>
+                <li>Успех: выявляет типы урона, к которым уязвима точка.</li>
+            </ul>
+            
+            <h3>Прицеливание</h3>
+            <ul>
+                <li>Создание аспекта <em>"На мушке"</em> (применим только к конкретной точке и может использоваться только персонажем, создавшим его, пропадает спустя 1 раунд или если цель станет скрыта от персонажа).</li>
+                <li>Сложность: 2 + Акробатика противника (полностью обеждвиженный противник не получает бонус Акробатики, противник, чье движение затруднено прибавляет только половину бонуса).</li>
+                <li>Эффект: снимает штраф -4 за атаку по уязвимой точке.</li>
+            </ul>
+            
+            <h3>Атака</h3>
+            <ul>
+                <li>Защита только через <em>Акробатику</em>/<em>Атлетику</em>.</li>
+                <li>Успех: строгое последствие (без учёта сдвигов).</li>
+                <li>Стильный успех: +1 ход к длительности аспектов состояния.</li>
+                <li>Ничья: <em>"На мушке"</em> сохраняется до следующего хода (если не пропадает досрочно).</li>
+            </ul>
+        </div>
+        
+        <div id="armor" class="tab-content">
+            <h2>Система Брони</h2>
+            <p>Броня дает дополнительные маркеры стресса, ячейки последствий, а также бонусы в зависимости от редкости. При расчете урона ячейки стресса брони можно задействовать только после защиты при помощи Атлетики. Если Последствие, предоставляемое броней было задействовано, то броня перестает давать дополнительные ячейки стресса и сопротивления пока не будет произведен ремонт (однако не перестает давать бонусы к навыкам). Маркеры стресса брони автоматически обновляются после выхода из конфликта.</p>
+            
+            <h3>Классы брони и их эффекты</h3>
+            <p>Каждый класс брони даёт:</p>
+            <ul>
+                <li>Дополнительные ячейки стресса (физического).</li>
+                <li>Дополнительные последствия (только физические).</li>
+                <li>Модификаторы к защитным навыкам (Атлетика, Акробатика и Скрытность).</li>
+            </ul>
+            
+            <table>
+                <tr>
+                    <th>Класс брони</th>
+                    <th>Доп. стресс</th>
+                    <th>Доп. последствия</th>
+                    <th>Бонусы/штрафы</th>
+                </tr>
+                <tr>
+                    <td>Лёгкая</td>
+                    <td>+2 ячейки на 1</td>
+                    <td>+1 лёгкое</td>
+                    <td>▪ Нет штрафов.</td>
+                </tr>
+                <tr>
+                    <td>Средняя</td>
+                    <td>+2 ячейки на 1 и +1 ячейка на 2</td>
+                    <td>+1 среднее</td>
+                    <td>▪ +1 к Атлетике (блок). ▪ -1 к Скрытности и Акробатике.</td>
+                </tr>
+                <tr>
+                    <td>Тяжёлая</td>
+                    <td>+1 ячейка на 1, +1 ячейка на 2, +1 ячейка на 3</td>
+                    <td>+1 тяжёлое</td>
+                    <td>▪ +2 к Атлетике (блок). ▪ -2 к Скрытности, -1 к Акробатике.</td>
+                </tr>
+            </table>
+            
+            <div class="armor-section">
+                <h3 class="armor-title">Броня Нора</h3>
+                <p class="armor-desc">(Охотники, живущие в гармонии с природой, но опасающиеся технологий)</p>
+                
+                <table>
+                    <tr>
+                        <th>Уровень редкости</th>
+                        <th>Название</th>
+                        <th>Сопротивления</th>
+                        <th>Бонус к навыку</th>
+                        <th>Особенности</th>
+                    </tr>
+                    <tr>
+                        <td>Охотник (легкая)</td>
+                        <td>Кожаный доспех</td>
+                        <td>Колющий урон</td>
+                        <td>—</td>
+                        <td>Лёгкая, не стесняет движений.</td>
+                    </tr>
+                    <tr>
+                        <td>Воитель (средняя)</td>
+                        <td>Костяная броня</td>
+                        <td>Колющий урон</td>
+                        <td>+1 к <em>Трапперству</em></td>
+                        <td>Укреплена костями машин.</td>
+                    </tr>
+                    <tr>
+                        <td>Вождь (средняя)</td>
+                        <td>Доспех Матери-Сердца</td>
+                        <td>Колющий + Рубящий урон</td>
+                        <td>+1 к <em>Трапперству</em></td>
+                        <td>Легендарная броня, украшенная древними рунами.</td>
+                    </tr>
+                </table>
+                <p><strong>Уязвимость:</strong> Дробящий (все уровни).</p>
+            </div>
+            
+            <!-- Остальные типы брони аналогично -->
+            <!-- Для краткости оставил только один пример, остальные можно добавить по аналогии -->
+            
+        </div>
+        
+        <div id="weapons" class="tab-content">
+            <h2>Система вооружения</h2>
+            
+            <h3>Классификация оружия</h3>
+            <p>Все оружие разделено на 3 категории:</p>
+            <ul>
+                <li>Дальнобойное (использует <em>Стрельбу</em>)</li>
+                <li>Ловушки (использует <em>Трапперство</em>)</li>
+                <li>Ближний бой (использует <em>Драку</em>)</li>
+            </ul>
+            
+            <h3>Дальнобойное оружие</h3>
+            <table>
+                <tr>
+                    <th>Оружие</th>
+                    <th>Навык</th>
+                    <th>Типы урона</th>
+                    <th>Дальность</th>
+                    <th>Особенности</th>
+                </tr>
+                <tr>
+                    <td>Лук</td>
+                    <td>Стрельба</td>
+                    <td>Кол/Хол/Ог/Взр/Эл/Зар/Сил</td>
+                    <td>2 зоны</td>
+                    <td>Атака по цели (с некоторыми боеприпасами по области)</td>
+                </tr>
+                <!-- Остальные строки таблицы аналогично -->
+            </table>
+            
+            <h3>Оружие-ловушки</h3>
+            <table>
+                <tr>
+                    <th>Оружие</th>
+                    <th>Навык</th>
+                    <th>Типы урона</th>
+                    <th>Дальность</th>
+                    <th>Особенности</th>
+                </tr>
+                <tr>
+                    <td>Нитемет</td>
+                    <td>Трапперство</td>
+                    <td>Эл/Взр/Звук/Хол/Ог/Зар</td>
+                    <td>Любая смежная грань зоны</td>
+                    <td>Установка ловушки (действие)</td>
+                </tr>
+                <!-- Остальные строки таблицы аналогично -->
+            </table>
+            
+            <h3>Оружие ближнего боя</h3>
+            <table>
+                <tr>
+                    <th>Оружие</th>
+                    <th>Навык</th>
+                    <th>Тип урона</th>
+                    <th>Особенности</th>
+                </tr>
+                <tr>
+                    <td>Копье</td>
+                    <td>Драка</td>
+                    <td>Колющий</td>
+                    <td>+1 к атаке против крупных противников</td>
+                </tr>
+                <!-- Остальные строки таблицы аналогично -->
+            </table>
+            
+            <h3>Спецэффекты (только при стильном успехе)</h3>
+            <ul>
+                <li>Огонь: аспект "Горение" (3 хода)</li>
+                <li>Холод: аспект "Обморожение" (3 хода)</li>
+                <li>Электричество/Звук: цель пропускает ход</li>
+                <li>Силовой/Взрыв: цель сбита с ног (лежит)</li>
+                <li>Заражение: аспект "Коррозия" (3 хода)</li>
+            </ul>
+            <p><em>(Обычные типы урона не дают эффектов)</em></p>
+        </div>
+    </div>
+    
+    <script>
+        function openTab(evt, tabName) {
+            var i, tabcontent, tabbtn;
+            
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].className = tabcontent[i].className.replace(" active", "");
+            }
+            
+            tabbtn = document.getElementsByClassName("tab-btn");
+            for (i = 0; i < tabbtn.length; i++) {
+                tabbtn[i].className = tabbtn[i].className.replace(" active", "");
+            }
+            
+            document.getElementById(tabName).className += " active";
+            evt.currentTarget.className += " active";
+        }
+    </script>
+</body>
+</html>
